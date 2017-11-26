@@ -40,10 +40,18 @@
         (function(){  
             var canvas=document.getElementById('cavsElem');  
             var ctx=canvas.getContext('2d');
-            var initPos = new Position({{initPos}});
-            var Parcels = {{Parcels}};
-            var Barriers = {{Barriers}};
+            var Parcels = {{data.Parcels}};
+            var Barriers = {{data.Barriers}};
+            var courier = {{data.courier}}
+            for(var i = 0; i < Parcels.length; i++) {
+                var parcel = new Parcel({imgSrc: 'imgs/gameImgs/Parcel.png', pos:Parcels[i].pos, value:Parcels.value});
+                parcel.render(ctx);
+            }
 
+            for(var i = 0; i < Barriers.length; i++){
+                var barrier = new Barrier({imgSrc: 'imgs/gameImgs/barrier.png', pos:Barriers[i].pos});
+                barrier.render(ctx);
+            }
             // 设置画布宽高
             canvas.width=800;  
             canvas.height=800;  
@@ -56,7 +64,10 @@
                 w0: 40,  
                 h0: 65,  
                 imgSrc: 'imgs/gameImgs/DMMban.png',
-                pos: initPos
+                pos: courier.pos,
+                direction: courier.direction,
+                step: courier.step,
+                score: courier.score
             });
       
             //渲染 动画  

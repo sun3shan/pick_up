@@ -15,11 +15,11 @@ Courier.prototype = {
         this.w0 = 40;
         this.h0 = 65;
   
-        this.dirIndex = option.direction;
+        this.dirIndex = 0;
         this.speed = option.speed||10;
         this.pos = option.pos;
-        this.step = option.step;
-        this.score = option.score;
+        this.step = 0;
+        this.score = 0;
 	},  
     //画图  
     render:function(ctx){  
