@@ -18,19 +18,19 @@
     <script type="text/javascript">
         function showGrid(ctx) {
             ctx.lineWidth = 0.5;
-            for(var i = 1; i < 10; i++) {
+            for(var i = 1; i < {{data.mapSize}}; i++) {
                 ctx.beginPath();
-                ctx.moveTo(0, i * ctx.canvas.height/10);
-                ctx.lineTo(ctx.canvas.width, i * ctx.canvas.height/10);
+                ctx.moveTo(0, i * ctx.canvas.height/{{data.mapSize}});
+                ctx.lineTo(ctx.canvas.width, i * ctx.canvas.height/{{data.mapSize}});
                 ctx.closePath();
                 ctx.strokeStyle="gray";
                 ctx.stroke();
             } 
 
-            for(var i = 1; i < 10; i++) {
+            for(var i = 1; i < {{data.mapSize}}; i++) {
                 ctx.beginPath();
-                ctx.moveTo(i * ctx.canvas.width/10, 0);
-                ctx.lineTo(i * ctx.canvas.width/10, ctx.canvas.height);
+                ctx.moveTo(i * ctx.canvas.width/{{data.mapSize}}, 0);
+                ctx.lineTo(i * ctx.canvas.width/{{data.mapSize}}, ctx.canvas.height);
                 ctx.closePath();
                 ctx.strokeStyle="gray";
                 ctx.stroke();
@@ -45,12 +45,12 @@
             var courier = {{data.courier}}
             for(var i = 0; i < Parcels.length; i++) {
                 var parcel = new Parcel({imgSrc: 'imgs/gameImgs/Parcel.png', pos:Parcels[i].pos, value:Parcels.value});
-                parcel.render(ctx);
+                parcel.render(ctx, {{data.mapSize}});
             }
 
             for(var i = 0; i < Barriers.length; i++){
                 var barrier = new Barrier({imgSrc: 'imgs/gameImgs/barrier.png', pos:Barriers[i].pos});
-                barrier.render(ctx);
+                barrier.render(ctx, {{data.mapSize}});
             }
             // 设置画布宽高
             canvas.width=800;  
