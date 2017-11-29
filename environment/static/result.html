@@ -2,7 +2,6 @@
 <html lang="en">  
 <head>  
     <meta charset="UTF-8">  
-	<meta http-equiv='refresh' content='0.7'>
     <title>测试环境</title>
     <script src="js/showCourier.js" type="text/javascript"></script>
     <script src="js/showBarrier.js" type="text/javascript"></script>
@@ -30,19 +29,19 @@
     <script type="text/javascript">
         function showGrid(ctx) {
             ctx.lineWidth = 0.5;
-            for(var i = 1; i < {{data.MapSize}}; i++) {
+            for(var i = 1; i < 30; i++) {
                 ctx.beginPath();
-                ctx.moveTo(0, i * ctx.canvas.height/{{data.MapSize}});
-                ctx.lineTo(ctx.canvas.width, i * ctx.canvas.height/{{data.MapSize}});
+                ctx.moveTo(0, i * ctx.canvas.height/30);
+                ctx.lineTo(ctx.canvas.width, i * ctx.canvas.height/30);
                 ctx.closePath();
                 ctx.strokeStyle="gray";
                 ctx.stroke();
             } 
 
-            for(var i = 1; i < {{data.MapSize}}; i++) {
+            for(var i = 1; i < 30; i++) {
                 ctx.beginPath();
-                ctx.moveTo(i * ctx.canvas.width/{{data.MapSize}}, 0);
-                ctx.lineTo(i * ctx.canvas.width/{{data.MapSize}}, ctx.canvas.height);
+                ctx.moveTo(i * ctx.canvas.width/30, 0);
+                ctx.lineTo(i * ctx.canvas.width/30, ctx.canvas.height);
                 ctx.closePath();
                 ctx.strokeStyle="gray";
                 ctx.stroke();
@@ -52,20 +51,20 @@
         (function(){  
             var canvas=document.getElementById('cavsElem');  
             var ctx=canvas.getContext('2d');
-            var Parcels = {{data.Parcels}};
-            var Barriers = {{data.Barriers}};
-            var courier = {{data.courier}}
+            var Parcels = [{pos: {X: 27, Y: 27}, value: 7}, {pos: {X: 12, Y: 13}, value: 7}, {pos: {X: 1, Y: 17}, value: 7}, {pos: {X: 21, Y: 4}, value: 8}, {pos: {X: 28, Y: 11}, value: 8}, {pos: {X: 4, Y: 27}, value: 8}, {pos: {X: 20, Y: 2}, value: 8}, {pos: {X: 29, Y: 13}, value: 8}, {pos: {X: 4, Y: 20}, value: 8}, {pos: {X: 4, Y: 12}, value: 8}];
+            var Barriers = [{pos: {X: 3, Y: 16}}, {pos: {X: 15, Y: 1}}, {pos: {X: 4, Y: 16}}, {pos: {X: 12, Y: 27}}, {pos: {X: 18, Y: 17}}, {pos: {X: 23, Y: 27}}, {pos: {X: 16, Y: 22}}, {pos: {X: 17, Y: 11}}, {pos: {X: 27, Y: 28}}, {pos: {X: 21, Y: 20}}, {pos: {X: 11, Y: 11}}, {pos: {X: 20, Y: 20}}, {pos: {X: 27, Y: 4}}, {pos: {X: 21, Y: 12}}, {pos: {X: 2, Y: 18}}, {pos: {X: 21, Y: 15}}, {pos: {X: 29, Y: 3}}, {pos: {X: 27, Y: 7}}, {pos: {X: 6, Y: 10}}, {pos: {X: 3, Y: 15}}, {pos: {X: 1, Y: 26}}, {pos: {X: 27, Y: 26}}, {pos: {X: 17, Y: 12}}, {pos: {X: 21, Y: 22}}];
+            var courier = {direction: 0, pos: {X: 0, Y: 11}, score: 0, step: 11}
 			document.getElementById('steps').innerText = courier.step;
 			document.getElementById('score').innerText = courier.score;
 			document.getElementById('residual').innerText = 500 - courier.step;
             for(var i = 0; i < Parcels.length; i++) {
                 var parcel = new Parcel({imgSrc: 'imgs/gameImgs/Parcel_'+Parcels[i].value+'.png', pos:Parcels[i].pos, value:Parcels[i].value});
-                parcel.render(ctx, {{data.MapSize}});
+                parcel.render(ctx, 30);
             }
 
             for(var i = 0; i < Barriers.length; i++){
                 var barrier = new Barrier({imgSrc: 'imgs/gameImgs/barrier.png', pos:Barriers[i].pos});
-                barrier.render(ctx, {{data.MapSize}});
+                barrier.render(ctx, 30);
             }
             // 设置画布宽高
             canvas.width=800;  
@@ -86,7 +85,7 @@
             });
       
             //渲染 动画  
-             man.render(ctx, {{data.MapSize}});  
+             man.render(ctx, 30);  
   
         // var buttons=document.getElementsByTagName('button');  
         // buttons[0].onclick=function(){  

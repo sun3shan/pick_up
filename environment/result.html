@@ -1,0 +1,95 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <title>测试环境</title>
+    <script src="js/showCourier.js" type="text/javascript"></script>
+    <script src="js/showBarrier.js" type="text/javascript"></script>
+    <script src="js/showParcel.js" type="text/javascript"></script>
+    <script src="js/common.js" type="text/javascript"></script>
+</head>  
+<body>  
+    <div id="container" style="text-align: center;">  
+        <canvas id="cavsElem">  
+            你的浏览器不支持canvas  
+        </canvas>  
+    </div>  
+  
+    <script type="text/javascript">
+        function showGrid(ctx) {
+            ctx.lineWidth = 0.5;
+            for(var i = 1; i < 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * ctx.canvas.height/10);
+                ctx.lineTo(ctx.canvas.width, i * ctx.canvas.height/10);
+                ctx.closePath();
+                ctx.strokeStyle="gray";
+                ctx.stroke();
+            } 
+
+            for(var i = 1; i < 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * ctx.canvas.width/10, 0);
+                ctx.lineTo(i * ctx.canvas.width/10, ctx.canvas.height);
+                ctx.closePath();
+                ctx.strokeStyle="gray";
+                ctx.stroke();
+            }
+        } 
+
+        (function(){  
+            var canvas=document.getElementById('cavsElem');  
+            var ctx=canvas.getContext('2d');
+            var Parcels = [{pos: {X: 9, Y: 4}, value: 10}, {pos: {X: 2, Y: 7}, value: 10}, {pos: {X: 2, Y: 2}, value: 10}, {pos: {X: 8, Y: 4}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 1, Y: 7}, value: 10}, {pos: {X: 3, Y: 4}, value: 10}, {pos: {X: 2, Y: 7}, value: 10}, {pos: {X: 4, Y: 5}, value: 10}, {pos: {X: 1, Y: 1}, value: 10}, {pos: {X: 6, Y: 9}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 2, Y: 2}, value: 10}, {pos: {X: 8, Y: 8}, value: 10}, {pos: {X: 9, Y: 6}, value: 10}, {pos: {X: 7, Y: 1}, value: 10}, {pos: {X: 2, Y: 4}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 9, Y: 1}, value: 10}, {pos: {X: 5, Y: 8}, value: 10}, {pos: {X: 6, Y: 6}, value: 10}, {pos: {X: 9, Y: 8}, value: 10}, {pos: {X: 6, Y: 7}, value: 10}, {pos: {X: 7, Y: 3}, value: 10}, {pos: {X: 9, Y: 3}, value: 10}, {pos: {X: 8, Y: 1}, value: 10}, {pos: {X: 2, Y: 1}, value: 10}, {pos: {X: 8, Y: 4}, value: 10}, {pos: {X: 1, Y: 9}, value: 10}, {pos: {X: 9, Y: 2}, value: 10}, {pos: {X: 3, Y: 8}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 6, Y: 6}, value: 10}, {pos: {X: 4, Y: 9}, value: 10}, {pos: {X: 7, Y: 1}, value: 10}, {pos: {X: 8, Y: 6}, value: 10}, {pos: {X: 3, Y: 7}, value: 10}, {pos: {X: 9, Y: 5}, value: 10}, {pos: {X: 1, Y: 6}, value: 10}, {pos: {X: 8, Y: 9}, value: 10}, {pos: {X: 2, Y: 5}, value: 10}, {pos: {X: 1, Y: 5}, value: 10}, {pos: {X: 8, Y: 6}, value: 10}, {pos: {X: 5, Y: 6}, value: 10}, {pos: {X: 9, Y: 6}, value: 10}, {pos: {X: 8, Y: 4}, value: 10}, {pos: {X: 1, Y: 8}, value: 10}, {pos: {X: 3, Y: 4}, value: 10}, {pos: {X: 4, Y: 1}, value: 10}, {pos: {X: 3, Y: 2}, value: 10}, {pos: {X: 2, Y: 3}, value: 10}, {pos: {X: 7, Y: 3}, value: 10}, {pos: {X: 1, Y: 5}, value: 10}, {pos: {X: 9, Y: 5}, value: 10}, {pos: {X: 7, Y: 8}, value: 10}, {pos: {X: 8, Y: 6}, value: 10}, {pos: {X: 8, Y: 3}, value: 10}, {pos: {X: 5, Y: 3}, value: 10}, {pos: {X: 7, Y: 6}, value: 10}, {pos: {X: 5, Y: 2}, value: 10}, {pos: {X: 2, Y: 4}, value: 10}, {pos: {X: 4, Y: 1}, value: 10}, {pos: {X: 4, Y: 9}, value: 10}, {pos: {X: 1, Y: 5}, value: 10}, {pos: {X: 9, Y: 6}, value: 10}, {pos: {X: 5, Y: 7}, value: 10}, {pos: {X: 4, Y: 5}, value: 10}, {pos: {X: 7, Y: 6}, value: 10}, {pos: {X: 6, Y: 6}, value: 10}, {pos: {X: 6, Y: 2}, value: 10}, {pos: {X: 8, Y: 1}, value: 10}, {pos: {X: 1, Y: 6}, value: 10}, {pos: {X: 4, Y: 1}, value: 10}, {pos: {X: 2, Y: 6}, value: 10}, {pos: {X: 1, Y: 4}, value: 10}, {pos: {X: 7, Y: 3}, value: 10}, {pos: {X: 3, Y: 7}, value: 10}, {pos: {X: 4, Y: 2}, value: 10}, {pos: {X: 1, Y: 1}, value: 10}, {pos: {X: 1, Y: 5}, value: 10}, {pos: {X: 7, Y: 2}, value: 10}, {pos: {X: 6, Y: 1}, value: 10}, {pos: {X: 8, Y: 5}, value: 10}, {pos: {X: 3, Y: 1}, value: 10}, {pos: {X: 8, Y: 3}, value: 10}, {pos: {X: 9, Y: 5}, value: 10}, {pos: {X: 2, Y: 7}, value: 10}, {pos: {X: 6, Y: 2}, value: 10}, {pos: {X: 3, Y: 2}, value: 10}, {pos: {X: 8, Y: 8}, value: 10}, {pos: {X: 1, Y: 8}, value: 10}, {pos: {X: 6, Y: 4}, value: 10}, {pos: {X: 6, Y: 9}, value: 10}, {pos: {X: 2, Y: 9}, value: 10}, {pos: {X: 1, Y: 4}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 9, Y: 2}, value: 10}, {pos: {X: 5, Y: 8}, value: 10}, {pos: {X: 2, Y: 8}, value: 10}, {pos: {X: 3, Y: 8}, value: 10}, {pos: {X: 3, Y: 7}, value: 10}, {pos: {X: 4, Y: 1}, value: 10}, {pos: {X: 4, Y: 5}, value: 10}, {pos: {X: 1, Y: 5}, value: 10}, {pos: {X: 1, Y: 2}, value: 10}, {pos: {X: 4, Y: 7}, value: 10}, {pos: {X: 9, Y: 6}, value: 10}, {pos: {X: 3, Y: 1}, value: 10}, {pos: {X: 2, Y: 6}, value: 10}, {pos: {X: 3, Y: 5}, value: 10}, {pos: {X: 9, Y: 5}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 9, Y: 2}, value: 10}, {pos: {X: 1, Y: 2}, value: 10}, {pos: {X: 2, Y: 3}, value: 10}, {pos: {X: 3, Y: 3}, value: 10}, {pos: {X: 6, Y: 8}, value: 10}, {pos: {X: 3, Y: 5}, value: 10}, {pos: {X: 4, Y: 3}, value: 10}, {pos: {X: 8, Y: 5}, value: 10}, {pos: {X: 2, Y: 2}, value: 10}, {pos: {X: 2, Y: 6}, value: 10}, {pos: {X: 7, Y: 1}, value: 10}, {pos: {X: 2, Y: 4}, value: 10}, {pos: {X: 9, Y: 7}, value: 10}, {pos: {X: 2, Y: 1}, value: 10}, {pos: {X: 8, Y: 6}, value: 10}, {pos: {X: 4, Y: 7}, value: 10}, {pos: {X: 7, Y: 5}, value: 10}, {pos: {X: 7, Y: 4}, value: 10}, {pos: {X: 5, Y: 4}, value: 10}, {pos: {X: 6, Y: 5}, value: 10}, {pos: {X: 1, Y: 4}, value: 10}, {pos: {X: 5, Y: 7}, value: 10}, {pos: {X: 5, Y: 1}, value: 10}, {pos: {X: 9, Y: 9}, value: 10}, {pos: {X: 3, Y: 8}, value: 10}, {pos: {X: 8, Y: 3}, value: 10}, {pos: {X: 6, Y: 7}, value: 10}, {pos: {X: 4, Y: 4}, value: 10}, {pos: {X: 9, Y: 3}, value: 10}, {pos: {X: 4, Y: 8}, value: 10}, {pos: {X: 7, Y: 6}, value: 10}, {pos: {X: 1, Y: 3}, value: 10}, {pos: {X: 8, Y: 8}, value: 10}, {pos: {X: 6, Y: 6}, value: 10}, {pos: {X: 1, Y: 7}, value: 10}, {pos: {X: 5, Y: 5}, value: 10}, {pos: {X: 9, Y: 8}, value: 10}, {pos: {X: 1, Y: 9}, value: 10}, {pos: {X: 8, Y: 2}, value: 10}];
+            var Barriers = [{pos: {X: 2, Y: 3}}, {pos: {X: 6, Y: 2}}, {pos: {X: 2, Y: 8}}];
+            var courier = {direction: 0, pos: {X: 0, Y: 0}, score: 0, step: 0}
+            for(var i = 0; i < Parcels.length; i++) {
+                var parcel = new Parcel({imgSrc: 'imgs/gameImgs/Parcel.png', pos:Parcels[i].pos, value:Parcels.value});
+                parcel.render(ctx, 10);
+            }
+
+            for(var i = 0; i < Barriers.length; i++){
+                var barrier = new Barrier({imgSrc: 'imgs/gameImgs/barrier.png', pos:Barriers[i].pos});
+                barrier.render(ctx, 10);
+            }
+            // 设置画布宽高
+            canvas.width=800;  
+            canvas.height=800;  
+            canvas.style.border = '4px solid #000';
+
+            showGrid(ctx);
+
+            var man = new Courier({
+                speed: 4,  
+                w0: 40,  
+                h0: 65,  
+                imgSrc: 'imgs/gameImgs/DMMban.png',
+                pos: courier.pos,
+                direction: courier.direction,
+                step: courier.step,
+                score: courier.score
+            });
+      
+            //渲染 动画  
+             man.render(ctx, 10);  
+  
+        // var buttons=document.getElementsByTagName('button');  
+        // buttons[0].onclick=function(){  
+        //     man.changeDirection('left');  
+        // }  
+        // buttons[1].onclick=function(){  
+        //     man.changeDirection('right');  
+        // }  
+        // buttons[2].onclick=function(){  
+        //     man.changeDirection('up');  
+        // }  
+        // buttons[3].onclick=function(){  
+        //     man.changeDirection('down');  
+        // }  
+  
+    }());  
+  
+  
+</script>  
+</body>  
+</html>  
