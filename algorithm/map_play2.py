@@ -176,6 +176,20 @@ def greedy_recursion(targets, cur_map, cur_pos, tar_list, cur_dir, cur_len, cur_
             best_dir = best_dir2
     return max_value, best_dir
 
+class Node:
+    def __init__(self, curNode):
+        self.curNode = curNode
+        self.childNodes = []
+        self.isLeaf = True
+    def addChild(Node):
+        self.childNodes.append(Node)
+
+
+def genTree(map_cur):
+    
+
+def getDirectionWithNoPath(cur_map):
+    tree = genTree(map_cur)
 
 def testAssess(env):
     # information you can get. NOTE:do not change these values
