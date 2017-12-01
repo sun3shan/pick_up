@@ -7,8 +7,10 @@ import time
 class Environment:
     def __init__(self, map_size = 100, obs_rate = 0.2):
         self.mapApi = MapApi()
+        self.startTime = time.time()
         self.map, self.pos = self.mapApi.getEniv()
-        self.lastTime = time.time()
+        self.lastTime = self.startTime
+        #self.lastTime = time.time()
         self.step  = 0
         self.score = self.mapApi.score
         self.posx, self.posy = self.pos
@@ -62,12 +64,13 @@ class Environment:
             self.map, self.pos, self.score, cur_score, self.GameOver= self.mapApi.move(movdir)
             curTime = time.time()
             self.deltaTime.append(curTime-self.lastTime)
-            print(self.deltaTime[-1])
+            if(self.deltaTime[-1]>1):
+                print(self.deltaTime[-1])
             self.lastTime = curTime
             if (self.posx, self.posy) != self.pos:
                 self.posx, self.posy = self.pos
                 print('error: direction errors')
-        self.watch()
+        #self.watch()
 #        cur_score = self.map[self.posx,self.posy]
 #        if cur_score > 0:
 #            self.score += cur_score

@@ -13,6 +13,7 @@ from dijkstra_offline import GridmapDijkstraOffline
 GLOBAL_PLANER = GridmapDijkstraOffline()
 old_map = np.zeros((12,12))
 bestPath = []
+canGetPackages = []
 
 
 def strategy_random_walk(env):
@@ -197,6 +198,9 @@ def greedy_recursion(targets, cur_map, cur_pos, tar_list, cur_dir, cur_len, cur_
 #def getDirectionWithNoPath(cur_map):
 #    tree = genTree(map_cur)
 
+p = []
+ta = []
+s = None
 def packagesSort(cur_map, cur_pos, targets):
     packages = []
     steps = np.ones((12,12))*100
@@ -209,13 +213,12 @@ def packagesSort(cur_map, cur_pos, targets):
             for pos in Pos:
                 if cur_map[tuple(pos)]-steps[tuple(pos)]>0:
                     packages.append({'pos':tuple(pos), 'value': cur_map[tuple(pos)]})
-                steps[pos] = 100
+                steps[tuple(pos)] = 100
         else:
             break
-    
     return packages
 def testAssess(env):
-    global bestPath, old_map
+    global bestPath, old_map, canGetPackages
     # information you can get. NOTE:do not change these values
     cx = env.posx
     cy = env.posy
@@ -233,7 +236,7 @@ def testAssess(env):
 #        for tar in targets:
 #            if cur_map[tar]-len(GLOBAL_PLANER.pathplan(cur_pos, tar))>0:
 #                packages.append({'pos':tar, 'value':cur_map[tar[0], tar[1]]})
-        Path = assess(cur_map, packages, cur_pos, residualStep=min(maxSteps-cur_step, cur_map.max()), Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}])
+        Path = assess(env, cur_map, packages, cur_pos, residualStep=min(maxSteps-cur_step, cur_map.max()), Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}])
         if len(Path[-1]['path'])==0:
             Path.pop(-1)
         cost = [path['getScore'] for path in Path if path['getScore']!=0 and path['Steps']!=0]        #*(path['Steps']/(501-cur_step))
@@ -244,17 +247,17 @@ def testAssess(env):
             indx = cost.index(maxCost)
             if len(Path[indx]['path'])>0:
                 bestPath = deepcopy(Path[indx]['path'])
+                canGetPackages = deepcopy(Path[indx]['getPackages'])
                 best_dir = path2dir(cur_pos,Path[indx]['path'][0])
-                bestPath.pop(0)
-            elif len(packages)>0:
-                print('1')
-                print(cur_step)
-                path = GLOBAL_PLANER.pathplan(cur_pos,packages[0]['pos'])
-    #            path = pathplan_astar(cur_map, cur_pos, packages[0]['pos'], 1000)
-                if len(path)>0:
-                    best_dir = path2dir(cur_pos, path[0])
-                    bestPath = deepcopy(path)
-                    bestPath.pop(0)
+#            elif len(packages)>0:
+#                print('1')
+#                print(cur_step)
+#                path = GLOBAL_PLANER.pathplan(cur_pos,packages[0]['pos'])
+#    #            path = pathplan_astar(cur_map, cur_pos, packages[0]['pos'], 1000)
+#                if len(path)>0:
+#                    best_dir = path2dir(cur_pos, path[0])
+#                    bestPath = deepcopy(path)
+#                    canGetPackages = [deepcopy(packages[0])]
             
         else:
             print('0')
@@ -265,16 +268,27 @@ def testAssess(env):
                 if len(path)>0:
                     best_dir = path2dir(cur_pos, path[0])
                     bestPath = deepcopy(path)
-                    bestPath.pop(0)
+                    canGetPackages = [deepcopy(packages[0])]
+        old_map = cur_map
         del Path
     else:
         best_dir = path2dir(cur_pos, bestPath[0])
+        
+    if len(bestPath)>0:
+        if bestPath[0]==canGetPackages[0]['pos']:
+            old_map[bestPath[0]] = 0
+            canGetPackages.pop(0)
+        else:
+            old_map = deepcopy(cur_map)
         bestPath.pop(0)
-    old_map = deepcopy(cur_map)
+    for tar in np.reshape(np.where(old_map==1),(2,-1)).T:
+        old_map[tuple(tar)] = 0
+        
     
     return best_dir if best_dir in range(4) else np.random.choice([0,1,2,3])
 
-def assess(cur_map, packages, currentPos=(0, 0), residualStep=10, Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}], level = 0):
+def assess(env, cur_map, packages, currentPos=(0, 0), residualStep=10, Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}], level = 0):
+
     curPath = deepcopy(Path[-1])
     for pack in packages:
         path = GLOBAL_PLANER.pathplan(currentPos,pack['pos'])
@@ -298,10 +312,11 @@ def assess(cur_map, packages, currentPos=(0, 0), residualStep=10, Path=[{'path':
             Path[-1]['Steps'] += path_len
             Path[-1]['Cost'] *= Path[-1]['Steps']/Path[-1]['getScore']
             if residualStep-path_len > 0:
-                
                 if len(otherPackages)>0:
-                    assess(cur_map, otherPackages, pack['pos'], residualStep-path_len, Path, level+1)
+                    assess(env, cur_map, otherPackages, pack['pos'], residualStep-path_len, Path, level+1)
                     del otherPackages,path
+        if env.step!=0 and (time.time()-env.startTime)/env.step>0:
+            break
     if len(curPath['path'])>0 and curPath!=Path[-1]:
         Path.append(deepcopy(curPath))
         
@@ -336,7 +351,8 @@ class MapPlayer:
     def play_episode(self, show_step = False, wait_ms = 100):
         self.Env.append(deepcopy(self.env))
         self.env = Environment()
-        for i in range(self.max_step):
+        while not self.env.GameOver:
+        # for i in range(self.max_step):
             movedir = self.strategy_foo(self.env)
             self.env.move(movedir)
             if show_step:
@@ -363,6 +379,9 @@ class MapPlayer:
         self.scores = []
         for i in range(round_cnt):
             self.scores.append(self.play_episode())
+            print('score:    ' + str(self.scores[-1]))
+            print('time:     ' + str(sum(self.env.deltaTime)))
+            print('')
             if verbose:
                 print('%d/%d'%(i+1,round_cnt),end='\r')
         print('%d/%d'%(i+1,round_cnt))
@@ -385,17 +404,17 @@ if __name__ == '__main__':
     # strategy = strategy_greedy
     # strategy = strategy_greedy2
     # strategy = strategy_greedy3
-    maxSteps = 288
+    maxSteps = 400
     strategy = testAssess
 
     play = MapPlayer(Environment(), strategy)
 
     ########### watch single round ##############
     #play.play_episode(True, 100)
-    play.play_existmap('maps/000.map',True, 100)
+#    play.play_existmap('maps/000.map',True, 100)
 
     ########### test multi round ################
-    play.play_rounds(10, True)
+    play.play_rounds(50, True)
 
 
 
