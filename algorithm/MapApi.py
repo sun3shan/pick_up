@@ -6,29 +6,33 @@ Created on Fri Dec  1 08:30:21 2017
 """
 
 import requests
+from flask import json
 import numpy as np
 
-URL = 'http://10.2.5.64/test'
+URL = 'http://10.2.5.64:80/competition'
 Direction = ['U', 'D', 'L', 'R']
 class MapApi():
     def __init__(self):
-        self.team = 'KOPB'
+        self.team = 'kopb'
         self.env_id = ''
         self.score = 0
     
     def getEniv(self):
         while True:
-            rsp = requests.post(URL, data={'name': self.team})
+            rsp = requests.post(URL, data=json.dumps({'name': self.team}))
             data = rsp.json()
             if(data['msg']=='OK'):
                 self.env_id = data['id']
                 self.map, self.cur_pos = self.decodeState(data['state'])
                 print(data['id'])
+                print(data)
                 return self.map, self.cur_pos
+            else:
+                return 'error:getEnv'+rsp.text
     
     def move(self, direction):
         while True:
-            rsp = requests.post(URL + '/'+ self.env_id + '/move', json={'direction': Direction[direction]})
+            rsp = requests.post(URL + '/'+ self.env_id + '/move', data=json.dumps({'direction': Direction[direction]}))
             data = rsp.json()
             if data['msg']=='OK':
                 self.env_id = data['id']
@@ -39,7 +43,7 @@ class MapApi():
                 return 'error'
             
     def decodeState(self, state):
-        _map = np.zeros((12, 12))
+        _map = np.zeros((12, 12), dtype=int)
         for wall in state['walls']:
             _map[wall['x'], wall['y']] = -1
         for job in state['jobs']:
