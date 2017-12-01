@@ -197,6 +197,23 @@ def greedy_recursion(targets, cur_map, cur_pos, tar_list, cur_dir, cur_len, cur_
 #def getDirectionWithNoPath(cur_map):
 #    tree = genTree(map_cur)
 
+def packagesSort(cur_map, cur_pos, targets):
+    packages = []
+    steps = np.ones((12,12))*100
+    for tar in targets:
+        steps[tar] = len(GLOBAL_PLANER.pathplan(cur_pos, tar))
+    while True:
+        minStep = steps.min()
+        if minStep!=100:
+            Pos = (np.reshape(np.where(steps==minStep), (2,-1)).T).tolist()
+            for pos in Pos:
+                if cur_map[tuple(pos)]-steps[tuple(pos)]>0:
+                    packages.append({'pos':tuple(pos), 'value': cur_map[tuple(pos)]})
+                steps[pos] = 100
+        else:
+            break
+    
+    return packages
 def testAssess(env):
     global bestPath, old_map
     # information you can get. NOTE:do not change these values
@@ -212,10 +229,10 @@ def testAssess(env):
         targets = [(tx,ty) for tx,ty in np.reshape(np.where(cur_map>0),(2,-1)).T]
     #    targets = [(tx,ty) for tx,ty in targets if abs(tx-cx)+abs(ty-cy)<cur_map[tx,ty]]
     
-        packages = []
-        for tar in targets:
-            if cur_map[tar]-len(GLOBAL_PLANER.pathplan(cur_pos, tar))>0:
-                packages.append({'pos':tar, 'value':cur_map[tar[0], tar[1]]})
+        packages = packagesSort(cur_map, cur_pos, targets)
+#        for tar in targets:
+#            if cur_map[tar]-len(GLOBAL_PLANER.pathplan(cur_pos, tar))>0:
+#                packages.append({'pos':tar, 'value':cur_map[tar[0], tar[1]]})
         Path = assess(cur_map, packages, cur_pos, residualStep=min(maxSteps-cur_step, cur_map.max()), Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}])
         if len(Path[-1]['path'])==0:
             Path.pop(-1)
@@ -343,22 +360,22 @@ class MapPlayer:
         return self.env.score
 
     def play_rounds(self, round_cnt, verbose = False):
-        scores = []
+        self.scores = []
         for i in range(round_cnt):
-            scores.append(self.play_episode())
+            self.scores.append(self.play_episode())
             if verbose:
                 print('%d/%d'%(i+1,round_cnt),end='\r')
         print('%d/%d'%(i+1,round_cnt))
 
-        scores = np.array(scores)
-        mean_score = np.mean(scores)
+        self.scores = np.array(self.scores)
+        mean_score = np.mean(self.scores)
         if verbose:
-            max_score = np.max(scores)
-            min_score = np.min(scores)
-            var_score = np.var(scores)
+            max_score = np.max(self.scores)
+            min_score = np.min(self.scores)
+            var_score = np.var(self.scores)
             print('Play %d rounds, Average score:%.3f (min:%.3f max:%.3f), var:%.3f'%(round_cnt, mean_score,
                 float(min_score),float(max_score),var_score))
-            print(scores)
+            print(self.scores)
 
         return mean_score
 
