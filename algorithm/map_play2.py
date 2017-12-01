@@ -8,6 +8,12 @@ from pathplan import pathplan_astar
 from copy import deepcopy
 
 import time
+from dijkstra_offline import GridmapDijkstraOffline
+
+GLOBAL_PLANER = GridmapDijkstraOffline()
+old_map = np.zeros((12,12))
+bestPath = []
+
 
 def strategy_random_walk(env):
     # information you can get. NOTE:do not change these values
@@ -176,22 +182,23 @@ def greedy_recursion(targets, cur_map, cur_pos, tar_list, cur_dir, cur_len, cur_
             best_dir = best_dir2
     return max_value, best_dir
 
-class Node:
-    def __init__(self, curNode):
-        self.curNode = curNode
-        self.childNodes = []
-        self.isLeaf = True
-    def addChild(Node):
-        self.childNodes.append(Node)
-
-
-def genTree(map_cur):
-    
-
-def getDirectionWithNoPath(cur_map):
-    tree = genTree(map_cur)
+#class Node:
+#    def __init__(self, curNode):
+#        self.curNode = curNode
+#        self.childNodes = []
+#        self.isLeaf = True
+#    def addChild(Node):
+#        self.childNodes.append(Node)
+#
+#
+#def genTree(map_cur):
+#    
+#
+#def getDirectionWithNoPath(cur_map):
+#    tree = genTree(map_cur)
 
 def testAssess(env):
+    global bestPath, old_map
     # information you can get. NOTE:do not change these values
     cx = env.posx
     cy = env.posy
@@ -199,109 +206,89 @@ def testAssess(env):
     cur_step = env.step
     cur_score = env.score
     cur_pos = (cx, cy)
-
-    # run your strategy
-    targets = [(tx,ty) for tx,ty in np.reshape(np.where(cur_map>0),(2,-1)).T]
-#    targets = [(tx,ty) for tx,ty in targets if abs(tx-cx)+abs(ty-cy)<cur_map[tx,ty]]
-
-    packages = []
-    for tar in targets:
-        packages.append({'pos':tar, 'value':cur_map[tar[0], tar[1]]})
-    Path = assess(cur_map, packages, cur_pos, residualStep=(500-cur_step if cur_step>490 else 10), Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}])
-    if len(Path[-1]['path'])==0:
-        Path.pop(-1)
-    Steps = [path['Steps'] for path in Path if path['Steps']>10]
-    if len(Steps)>0:
-        print(Path)
-        time.sleep(6)
-    cost = [path['Steps']/path['getScore'] for path in Path if path['getScore']!=0 and path['Steps']!=0]        #*(path['Steps']/(501-cur_step))
-#    cost = [path['Cost'] for path in Path]
-    best_dir = -1
-    if len(cost)>0:
-        maxCost = min(cost)
-        indx = cost.index(maxCost)
-        if len(Path[indx]['path'])>0:
-            best_dir = path2dir(cur_pos,Path[indx]['path'][0])
-        elif len(packages)>0:
-            path = pathplan_astar(cur_map, cur_pos, packages[0]['pos'], 1000)
-            if len(path)>0:
-                best_dir = path2dir(cur_pos, path[0])
+    
+    if not (old_map== cur_map).all() or len(bestPath)==0:
+        # run your strategy
+        targets = [(tx,ty) for tx,ty in np.reshape(np.where(cur_map>0),(2,-1)).T]
+    #    targets = [(tx,ty) for tx,ty in targets if abs(tx-cx)+abs(ty-cy)<cur_map[tx,ty]]
+    
+        packages = []
+        for tar in targets:
+            if cur_map[tar]-len(GLOBAL_PLANER.pathplan(cur_pos, tar))>0:
+                packages.append({'pos':tar, 'value':cur_map[tar[0], tar[1]]})
+        Path = assess(cur_map, packages, cur_pos, residualStep=min(maxSteps-cur_step, cur_map.max()), Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}])
+        if len(Path[-1]['path'])==0:
+            Path.pop(-1)
+        cost = [path['getScore'] for path in Path if path['getScore']!=0 and path['Steps']!=0]        #*(path['Steps']/(501-cur_step))
+    #    cost = [path['Cost'] for path in Path]
+        best_dir = -1
+        if len(cost)>0:
+            maxCost = max(cost)
+            indx = cost.index(maxCost)
+            if len(Path[indx]['path'])>0:
+                bestPath = deepcopy(Path[indx]['path'])
+                best_dir = path2dir(cur_pos,Path[indx]['path'][0])
+                bestPath.pop(0)
+            elif len(packages)>0:
+                print('1')
+                print(cur_step)
+                path = GLOBAL_PLANER.pathplan(cur_pos,packages[0]['pos'])
+    #            path = pathplan_astar(cur_map, cur_pos, packages[0]['pos'], 1000)
+                if len(path)>0:
+                    best_dir = path2dir(cur_pos, path[0])
+                    bestPath = deepcopy(path)
+                    bestPath.pop(0)
+            
+        else:
+            print('0')
+            print(cur_step)
+            if len(packages)>0:
+                path = GLOBAL_PLANER.pathplan(cur_pos,packages[0]['pos'])
+                #path = pathplan_astar(cur_map, cur_pos, packages[0]['pos'], 1000)
+                if len(path)>0:
+                    best_dir = path2dir(cur_pos, path[0])
+                    bestPath = deepcopy(path)
+                    bestPath.pop(0)
+        del Path
     else:
-        if len(packages)>0:
-            path = pathplan_astar(cur_map, cur_pos, packages[0]['pos'], 1000)
-            if len(path)>0:
-                best_dir = path2dir(cur_pos, path[0])
-
+        best_dir = path2dir(cur_pos, bestPath[0])
+        bestPath.pop(0)
+    old_map = deepcopy(cur_map)
     
     return best_dir if best_dir in range(4) else np.random.choice([0,1,2,3])
 
 def assess(cur_map, packages, currentPos=(0, 0), residualStep=10, Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}], level = 0):
     curPath = deepcopy(Path[-1])
-#    print('Packages')
-#    print(packages)
-#    print('residual      '+str(residualStep))
-#    print('')
-#    print('lastPath')
-#    print(Path[-1])
-#    print('')
     for pack in packages:
-#        print('level                 '+str(level))
-#        print('residual      '+str(residualStep))
-        path = pathplan_astar(cur_map, currentPos, pack['pos'], pack['value'])
+        path = GLOBAL_PLANER.pathplan(currentPos,pack['pos'])
+        #path = pathplan_astar(cur_map, currentPos, pack['pos'], pack['value'])
         path_len = len(path)
+        otherPackages = [{'pos':p['pos'], 'value':p['value']-path_len} for p in packages if p!=pack and p['value']-path_len>0]
+        isContinue = False
+        for other in otherPackages:
+            if len(GLOBAL_PLANER.pathplan(currentPos, other['pos']))+len(GLOBAL_PLANER.pathplan(other['pos'], pack['pos'])) <= path_len:
+#            if other['pos'] in path:
+                isContinue = True
+                break
+        if isContinue:
+            continue
         if path_len<min(residualStep, pack['value']) and path_len>0:
-#            print('curPath')
-#            print(curPath)
-#            print('')
-#            print('lastPath')
-#            print(Path[-1])
-#            print('')
-#            print('residual      '+str(residualStep))
             if curPath!=Path[-1]:
                 Path.append(deepcopy(curPath))
-#            print('lastPath')
-#            print(Path[-1])
-#            print('')
             Path[-1]['path'].extend(path)
             Path[-1]['getPackages'].append(pack)
             Path[-1]['getScore'] += pack['value']-path_len
             Path[-1]['Steps'] += path_len
-#            print('Path')
-#            print(Path[-1])
-#            print('')
-#            print('curPath')
-#            print(curPath)
-#            print('')
-#            print(curPath==Path[-1])
-            if Path[-1]['Steps']>10:
-                print('Path')
-                print(Path[-1])
-                print('')
-                print('path')
-                print(path)
-                print('')
-                print('residual      '+str(residualStep))
-                print('package')
-                print(pack)
-                time.sleep(10)
             Path[-1]['Cost'] *= Path[-1]['Steps']/Path[-1]['getScore']
             if residualStep-path_len > 0:
-                otherPackages = [{'pos':p['pos'], 'value':p['value']-path_len} for p in packages if p!=pack and p['value']-path_len>0]
+                
                 if len(otherPackages)>0:
-#                    print('otherPackages')
-#                    print(otherPackages)
-#                    print('')
-#                    print('path_len           ' + str(path_len))
                     assess(cur_map, otherPackages, pack['pos'], residualStep-path_len, Path, level+1)
                     del otherPackages,path
     if len(curPath['path'])>0 and curPath!=Path[-1]:
         Path.append(deepcopy(curPath))
         
     del curPath, packages
-#    if len(Path)>1:
-#        print('lastPath')
-#        print(Path[-1])
-#        print('')
     return Path
             
            
@@ -323,13 +310,15 @@ def strategy_greedy3(env):
     return best_dir if best_dir>=0 else np.random.choice([0,1,2,3])
 
 class MapPlayer:
-    def __init__(self, env, strategy_foo, max_step=500):
+    def __init__(self, env, strategy_foo, max_step=288):
         self.env = env
         self.strategy_foo = strategy_foo
-        self.max_step = 500
+        self.max_step = 288
+        self.Env = []
 
     def play_episode(self, show_step = False, wait_ms = 100):
-        self.env.reset()
+        self.Env.append(deepcopy(self.env))
+        self.env = Environment()
         for i in range(self.max_step):
             movedir = self.strategy_foo(self.env)
             self.env.move(movedir)
@@ -341,8 +330,8 @@ class MapPlayer:
         return self.env.score
 
     def play_existmap(self, mapfile, show_step = False, wait_ms = 100):
-        self.env.reset()
-        self.env.load(mapfile)
+#        self.Env.append(deepcopy(self.env))
+#        self.env = Environment()
         for i in range(self.max_step):
             movedir = self.strategy_foo(self.env)
             self.env.move(movedir)
@@ -379,9 +368,10 @@ if __name__ == '__main__':
     # strategy = strategy_greedy
     # strategy = strategy_greedy2
     # strategy = strategy_greedy3
+    maxSteps = 288
     strategy = testAssess
 
-    play = MapPlayer(Environment(10), strategy)
+    play = MapPlayer(Environment(), strategy)
 
     ########### watch single round ##############
     #play.play_episode(True, 100)
