@@ -93,13 +93,17 @@ def testAssess(env):
             Path.pop(-1)
         
         # 评估函数
-        cost = [path['getScore']/path['Steps'] for path in Path if path['getScore']!=0 and path['Steps']!=0] 
+        cost = np.array([path['getScore']/path['Steps'] for path in Path if path['getScore']!=0 and path['Steps']!=0])
+            
 
         best_dir = -1
-        if len(cost)>0:
+        if cost.size>0:
             # 评估函数最大的路径
-            maxCost = max(cost)
-            indx = cost.index(maxCost)
+#            maxCost = cost.max()
+            minStep = np.Inf
+            for pos in np.reshape(np.where(cost==cost.max()),(1,-1)).T:
+                if minStep>Path[pos[0]]['Steps']:
+                    indx = pos[0]
             if len(Path[indx]['path'])>0:
                 bestPath = deepcopy(Path[indx]['path'])
                 canGetPackages = deepcopy(Path[indx]['getPackages'])
@@ -159,7 +163,7 @@ def assess(env, cur_map, packages, currentPos=(0, 0), residualStep=10, Path=[{'p
             Path[-1]['getPackages'].append(pack)
             Path[-1]['getScore'] += pack['value']-path_len
             Path[-1]['Steps'] += path_len
-            if len(otherPackages)>0 and level<5:
+            if len(otherPackages)>0 and level<4 :
                 assess(env, cur_map, otherPackages, pack['pos'], residualStep-path_len, Path, level+1)
             del otherPackages,path
     if len(curPath['path'])>0 and curPath!=Path[-1]:
