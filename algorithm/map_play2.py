@@ -3,14 +3,14 @@ import pdb
 import numpy as np
 import cv2
 import os
-from map_env import Environment
+from map_env2 import Environment
 from pathplan import pathplan_astar
 from copy import deepcopy
 
 import time
-from dijkstra_offline import GridmapDijkstraOffline
+from dijkstra_offline2 import GridmapDijkstraOffline
 
-GLOBAL_PLANER = GridmapDijkstraOffline()
+GLOBAL_PLANER = GridmapDijkstraOffline(Environment().map)
 old_map = np.zeros((12,12))
 bestPath = []
 canGetPackages = []
@@ -66,7 +66,7 @@ def packagesSort(cur_map, cur_pos, targets):
             break
     return packages
 
-# 评估函数
+
 def testAssess(env):
     global bestPath, old_map, canGetPackages
     # information you can get. NOTE:do not change these values
@@ -78,32 +78,32 @@ def testAssess(env):
     cur_pos = (cx, cy)
     lastTime = int(time.time())
     
-    # 如果地图发生更新
+    
     if not (old_map== cur_map).all() or len(bestPath)==0:
         # run your strategy
         targets = [(tx,ty) for tx,ty in np.reshape(np.where(cur_map>0),(2,-1)).T]
         
-        
-        # 获取地图上可获得的包裹
         packages = packagesSort(cur_map, cur_pos, targets)
         
-        # 获取n层递归下的所有路径
         Path = assess(env, cur_map, packages, cur_pos, residualStep=min(maxSteps-cur_step, cur_map.max()), Path=[{'path':[],'getPackages':[], 'getScore':0, 'Steps':0, 'Cost':0}])
         if len(Path[-1]['path'])==0:
             Path.pop(-1)
         
-        # 评估函数
-        cost = np.array([path['getScore']/path['Steps'] for path in Path if path['getScore']!=0 and path['Steps']!=0])
+        cost = np.array([path['getScore']/path['Steps']*((400-cur_step-path['Steps'])/100.0)*(len(path['getPackages'])) for path in Path if path['getScore']!=0 and path['Steps']!=0])
+
+#        cost = np.array([path['getScore']/path['Steps'] for path in Path if path['getScore']!=0 and path['Steps']!=0])
+#        cost = np.array([path['getScore']*((400-cur_step-path['Steps'])/1000.0) for path in Path if path['getScore']!=0 and path['Steps']!=0])
+#        cost = np.array([path['Cost']*(400-path['Steps']) for path in Path if path['getScore']!=0 and path['Steps']!=0])
             
 
         best_dir = -1
         if cost.size>0:
-            # 评估函数最大的路径
 #            maxCost = cost.max()
             minStep = np.Inf
             for pos in np.reshape(np.where(cost==cost.max()),(1,-1)).T:
                 if minStep>Path[pos[0]]['Steps']:
                     indx = pos[0]
+                    minStep = Path[pos[0]]['Steps']
             if len(Path[indx]['path'])>0:
                 bestPath = deepcopy(Path[indx]['path'])
                 canGetPackages = deepcopy(Path[indx]['getPackages'])
@@ -119,7 +119,6 @@ def testAssess(env):
                     canGetPackages = [deepcopy(packages[0])]
         old_map = deepcopy(cur_map)
         del Path
-    # 如果地图没有发生更新
     else:
         best_dir = path2dir(cur_pos, bestPath[0])
         
@@ -163,6 +162,7 @@ def assess(env, cur_map, packages, currentPos=(0, 0), residualStep=10, Path=[{'p
             Path[-1]['getPackages'].append(pack)
             Path[-1]['getScore'] += pack['value']-path_len
             Path[-1]['Steps'] += path_len
+            Path[-1]['Cost'] *= (pack['value']-path_len)/path_len
             if len(otherPackages)>0 and level<4 :
                 assess(env, cur_map, otherPackages, pack['pos'], residualStep-path_len, Path, level+1)
             del otherPackages,path
@@ -213,8 +213,8 @@ class MapPlayer:
             print('score:    ' + str(self.scores[-1]))
             print('time:     ' + str(int(time.time())-startTime))
             if verbose:
-                print('%d/%d'%(i+1,round_cnt),end='\r')
-        print('%d/%d'%(i+1,round_cnt))
+                print('%d/%d\n'%(i+1,round_cnt),end='\r')
+        print('%d/%d\n'%(i+1,round_cnt))
 
         self.scores = np.array(self.scores)
         mean_score = np.mean(self.scores)
